@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicio - Canciones Con Letras</title>
+    <!-- Iconos Lucide para un aspecto moderno y profesional -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg-dark: #04060a;
+            --surface: rgba(18, 24, 38, 0.6);
+            --surface-border: rgba(255, 255, 255, 0.08);
+            --accent-cyan: #00f2fe;
+            --accent-purple: #9b51e0;
+            --text-main: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --input-bg: rgba(7, 10, 17, 0.85);
+            --card-hover: rgba(255, 255, 255, 0.03);
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(0, 242, 254, 0.08) 0px, transparent 40%),
+                radial-gradient(at 100% 0%, rgba(155, 81, 224, 0.08) 0px, transparent 40%);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        /* Bloqueo de carga de protección de sesión */
+        #authLockOverlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: var(--bg-dark);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .spinner {
+            width: 45px; height: 45px;
+            border: 3px solid rgba(255,255,255,0.05);
+            border-radius: 50%;
+            border-top-color: var(--accent-cyan);
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Barra de Navegación */
+        nav {
+            background: rgba(11, 15, 24, 0.7);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-bottom: 1px solid var(--surface-border);
+            padding: 16px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-icon-wrapper {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            padding: 8px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .brand span {
+            font-size: 1.3rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #ffffff, #a5b4fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-email {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .btn-logout {
+            background: transparent;
+            border: 1px solid rgba(255,77,109,0.3);
+            color: #ff4d6d;
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-logout:hover {
+            background: rgba(255,77,109,0.1);
+            border-color: #ff4d6d;
+        }
+
+        /* Contenedor Principal */
+        .container {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 20px;
+            box-sizing: border-box;
+        }
+
+        /* Sección del Buscador Avanzado */
+        .search-section {
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--surface-border);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            margin-bottom: 40px;
+        }
+
+        .search-box-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .search-input-container {
+            position: relative;
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-input-container i {
+            position: absolute;
+            left: 20px;
+            color: #4b5563;
+        }
+
+        .search-input-container input {
+            width: 100%;
+            padding: 16px 16px 16px 54px;
+            background: var(--input-bg);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            color: white;
+            font-size: 1.05rem;
+            box-sizing: border-box;
+            transition: all 0.3s;
+        }
+
+        .search-input-container input:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.15);
+        }
+
+        /* Filtros */
+        .filters-container {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            padding: 6px 14px;
+            border-radius: 10px;
+        }
+
+        .filter-group label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-group select {
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 0.9rem;
+            outline: none;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .filter-group select option {
+            background: #0b111e;
+            color: #fff;
+        }
+
+        /* Grid de Resultados */
+        .results-heading {
+            font-size: 1.4rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .results-heading span {
+            color: var(--accent-cyan);
+        }
+
+        .songs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .song-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--surface-border);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .song-card:hover {
+            background: var(--card-hover);
+            border-color: rgba(0, 242, 254, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        .song-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .song-icon {
+            background: rgba(155, 81, 224, 0.15);
+            color: var(--accent-purple);
+            width: 44px; height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .song-card:hover .song-icon {
+            background: rgba(0, 242, 254, 0.2);
+            color: var(--accent-cyan);
+        }
+
+        .song-details h4 {
+            margin: 0 0 4px 0;
+            font-size: 1.05rem;
+            font-weight: 700;
+        }
+
+        .song-details p {
+            margin: 0;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .btn-sing {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: #fff;
+            width: 38px; height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .song-card:hover .btn-sing {
+            background: var(--accent-cyan);
+            color: #000;
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 12px rgba(0, 242, 254, 0.4);
+        }
+
+        .no-results {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Capa de bloqueo protectora -->
+    <div id="authLockOverlay">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Navegación Superior -->
+    <nav>
+        <div class="brand">
+            <div class="brand-icon-wrapper">
+                <i data-lucide="music-4" style="width: 20px; height: 20px; color: #000;"></i>
+            </div>
+            <span>Canciones Con Letras</span>
+        </div>
+        <div class="user-menu">
+            <span class="user-email" id="userEmail">...</span>
+            <button class="btn-logout" id="btnLogout">
+                <i data-lucide="log-out" style="width: 16px; height: 16px;"></i>
+                <span>Salir</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Contenido Principal -->
+    <div class="container">
+        
+        <!-- Sección del Buscador -->
+        <div class="search-section">
+            <div class="search-box-wrapper">
+                <div class="search-input-container">
+                    <i data-lucide="search" style="width: 22px; height: 22px;"></i>
+                    <input type="text" id="searchInput" placeholder="Busca por canción, letra o palabras clave...">
+                </div>
+            </div>
+
+            <!-- Filtros de Categorías -->
+            <div class="filters-container">
+                <div class="filter-group">
+                    <label for="filterArtist">Artista</label>
+                    <select id="filterArtist">
+                        <option value="all">Todos los artistas</option>
+                        <option value="duki">Duki</option>
+                        <option value="rosalia">Rosalía</option>
+                        <option value="bizarrap">Bizarrap</option>
+                        <option value="bad bunny">Bad Bunny</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="filterGenre">Género</label>
+                    <select id="filterGenre">
+                        <option value="all">Todos los géneros</option>
+                        <option value="trap">Trap</option>
+                        <option value="pop">Pop</option>
+                        <option value="reggaeton">Reggaetón</option>
+                        <option value="urban">Urbano</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Título de Sección -->
+        <h3 class="results-heading">
+            <i data-lucide="list-music" style="color: var(--accent-cyan);"></i>
+            Explorar canciones (<span id="resultsCount">0</span>)
+        </h3>
+
+        <!-- Grid de Resultados -->
+        <div class="songs-grid" id="songsGrid">
+            <!-- Las tarjetas se inyectan dinámicamente mediante JS -->
+        </div>
+
+    </div>
+
+    <!-- Firebase SDK Modules -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCxlVM-b8r9m3l_10ENL0fgjsf7Dtm1Eoo",
+            authDomain: "cancionesconletras.firebaseapp.com",
+            projectId: "cancionesconletras",
+            storageBucket: "cancionesconletras.firebasestorage.app",
+            messagingSenderId: "1079542189727",
+            appId: "1:1079542189727:web:4d6d2daaeb5fa708fe1caa",
+            measurementId: "G-FDC30G0TXM"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Base de datos local mockeada para la búsqueda reactiva
+        const dbCanciones = [
+            { id: 1, title: "Canción Loca", artist: "Duki", genre: "trap" },
+            { id: 2, title: "Malamente", artist: "Rosalía", genre: "pop" },
+            { id: 3, title: "Bzrp Music Sessions #53", artist: "Bizarrap", genre: "urban" },
+            { id: 4, title: "Monaco", artist: "Bad Bunny", genre: "reggaeton" },
+            { id: 5, title: "Goteo", artist: "Duki", genre: "trap" }
+        ];
+
+        // Elementos del DOM
+        const authLockOverlay = document.getElementById('authLockOverlay');
+        const userEmailSpan = document.getElementById('userEmail');
+        const btnLogout = document.getElementById('btnLogout');
+        const searchInput = document.getElementById('searchInput');
+        const filterArtist = document.getElementById('filterArtist');
+        const filterGenre = document.getElementById('filterGenre');
+        const songsGrid = document.getElementById('songsGrid');
+        const resultsCount = document.getElementById('resultsCount');
+
+        // ==========================================
+        // 🔒 PROTECCIÓN DE RUTA (MIDDLEWARE FRONTIER)
+        // ==========================================
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                console.log("Acceso denegado. Redirigiendo a login.html...");
+                window.location.replace("login.html");
+            } else {
+                userEmailSpan.textContent = user.email;
+                // Retirar la pantalla de bloqueo
+                authLockOverlay.style.opacity = '0';
+                setTimeout(() => authLockOverlay.style.display = 'none', 400);
+                
+                // Inicializar la búsqueda leyendo parámetros de la URL directamente
+                readURLParams();
+            }
+        });
+
+        // Evento Salir de Sesión
+        btnLogout.addEventListener('click', () => {
+            signOut(auth).then(() => window.location.replace("login.html"));
+        });
+
+        // ==========================================
+        // 🔍 MOTOR DE BÚSQUEDA Y MANEJO DE URL
+        // ==========================================
+        
+        // Lee los parámetros existentes en la barra de direcciones al cargar
+        function readURLParams() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const searchParam = urlParams.get('search') || "";
+            const artistParam = urlParams.get('artist') || "all";
+            const genreParam = urlParams.get('genre') || "all";
+
+            // Sincronizar los inputs visualmente
+            searchInput.value = searchParam;
+            filterArtist.value = artistParam;
+            filterGenre.value = genreParam;
+
+            ejecutarBusqueda(searchParam, artistParam, genreParam);
+        }
+
+        // Actualiza la URL dinámicamente y ejecuta el renderizado
+        function actualizarFiltrosYURL() {
+            const textoSearch = searchInput.value.trim();
+            const artistaSelected = filterArtist.value;
+            const generoSelected = filterGenre.value;
+
+            const url = new URL(window.location.href);
+            
+            // Gestión limpia de Query Params
+            if (textoSearch) url.searchParams.set('search', textoSearch);
+            else url.searchParams.delete('search');
+
+            if (artistaSelected !== 'all') url.searchParams.set('artist', artistaSelected);
+            else url.searchParams.delete('artist');
+
+            if (generoSelected !== 'all') url.searchParams.set('genre', generoSelected);
+            else url.searchParams.delete('genre');
+
+            // Modificar la URL en el navegador sin recargar la página entera
+            window.history.replaceState({}, '', url);
+
+            ejecutarBusqueda(textoSearch, artistaSelected, generoSelected);
+        }
+
+        // Proceso lógico de filtrado
+        function ejecutarBusqueda(query, artist, genre) {
+            const resultados = dbCanciones.filter(cancion => {
+                const matchQuery = cancion.title.toLowerCase().includes(query.toLowerCase()) || 
+                                   cancion.artist.toLowerCase().includes(query.toLowerCase());
+                const matchArtist = artist === 'all' || cancion.artist.toLowerCase() === artist;
+                const matchGenre = genre === 'all' || cancion.genre.toLowerCase() === genre;
+
+                return matchQuery && matchArtist && matchGenre;
+            });
+
+            renderCards(resultados);
+        }
+
+        // Renderizado Dinámico de Componentes en la Grid
+        function renderCards(canciones) {
+            songsGrid.innerHTML = "";
+            resultsCount.textContent = canciones.length;
+
+            if (canciones.length === 0) {
+                songsGrid.innerHTML = `
+                    <div class="no-results">
+                        <i data-lucide="frown" style="width: 40px; height: 40px; margin-bottom:10px;"></i>
+                        <p>No encontramos canciones que coincidan con los criterios aplicados.</p>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            canciones.forEach(cancion => {
+                const card = document.createElement('div');
+                card.classList.add('song-card');
+                card.innerHTML = `
+                    <div class="song-info">
+                        <div class="song-icon">
+                            <i data-lucide="music"></i>
+                        </div>
+                        <div class="song-details">
+                            <h4>${cancion.title}</h4>
+                            <p>${cancion.artist} • <span style="text-transform: capitalize;">${cancion.genre}</span></p>
+                        </div>
+                    </div>
+                    <button class="btn-sing" title="Cantar ahora">
+                        <i data-lucide="play" style="width: 16px; height: 16px; margin-left: 2px;"></i>
+                    </button>
+                `;
+                
+                // Acción al dar clic en cantar
+                card.querySelector('.btn-sing').addEventListener('click', () => {
+                    alert(`Iniciando interfaz de Karaoke para: ${cancion.title}`);
+                    // Aquí redirigirías a tu visor de karaoke pasando el id, ej: window.location.href = `karaoke.html?id=${cancion.id}`;
+                });
+
+                songsGrid.appendChild(card);
+            });
+
+            // Re-renderizar iconos inyectados dinámicamente
+            lucide.createIcons();
+        }
+
+        // Listeners Reactivos
+        searchInput.addEventListener('input', actualizarFiltrosYURL);
+        filterArtist.addEventListener('change', actualizarFiltrosYURL);
+        filterGenre.addEventListener('change', actualizarFiltrosYURL);
+
+        // Inicializar iconos estáticos al inicio
+        lucide.createIcons();
+    </script>
+</body>
+</html>
