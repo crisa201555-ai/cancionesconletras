@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inicio - Canciones Con Letras</title>
-    <!-- Iconos Lucide para un aspecto moderno y profesional -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         :root {
@@ -41,6 +40,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            transition: opacity 0.4s ease;
         }
 
         .spinner {
@@ -320,12 +320,10 @@
 </head>
 <body>
 
-    <!-- Capa de bloqueo protectora -->
     <div id="authLockOverlay">
         <div class="spinner"></div>
     </div>
 
-    <!-- Navegación Superior -->
     <nav>
         <div class="brand">
             <div class="brand-icon-wrapper">
@@ -342,28 +340,21 @@
         </div>
     </nav>
 
-    <!-- Contenido Principal -->
     <div class="container">
         
-        <!-- Sección del Buscador -->
         <div class="search-section">
             <div class="search-box-wrapper">
                 <div class="search-input-container">
                     <i data-lucide="search" style="width: 22px; height: 22px;"></i>
-                    <input type="text" id="searchInput" placeholder="Busca por canción, letra o palabras clave...">
+                    <input type="text" id="searchInput" placeholder="Busca por canción, letra o artista...">
                 </div>
             </div>
 
-            <!-- Filtros de Categorías -->
             <div class="filters-container">
                 <div class="filter-group">
                     <label for="filterArtist">Artista</label>
                     <select id="filterArtist">
                         <option value="all">Todos los artistas</option>
-                        <option value="duki">Duki</option>
-                        <option value="rosalia">Rosalía</option>
-                        <option value="bizarrap">Bizarrap</option>
-                        <option value="bad bunny">Bad Bunny</option>
                     </select>
                 </div>
 
@@ -371,29 +362,20 @@
                     <label for="filterGenre">Género</label>
                     <select id="filterGenre">
                         <option value="all">Todos los géneros</option>
-                        <option value="trap">Trap</option>
-                        <option value="pop">Pop</option>
-                        <option value="reggaeton">Reggaetón</option>
-                        <option value="urban">Urbano</option>
                     </select>
                 </div>
             </div>
         </div>
 
-        <!-- Título de Sección -->
         <h3 class="results-heading">
             <i data-lucide="list-music" style="color: var(--accent-cyan);"></i>
             Explorar canciones (<span id="resultsCount">0</span>)
         </h3>
 
-        <!-- Grid de Resultados -->
-        <div class="songs-grid" id="songsGrid">
-            <!-- Las tarjetas se inyectan dinámicamente mediante JS -->
-        </div>
+        <div class="songs-grid" id="songsGrid"></div>
 
     </div>
 
-    <!-- Firebase SDK Modules -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
@@ -411,16 +393,17 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
-        // Base de datos local mockeada para la búsqueda reactiva
+        // Arreglo de base de datos local
         const dbCanciones = [
-            { id: 1, title: "Canción Loca", artist: "Duki", genre: "trap" },
-            { id: 2, title: "Malamente", artist: "Rosalía", genre: "pop" },
-            { id: 3, title: "Bzrp Music Sessions #53", artist: "Bizarrap", genre: "urban" },
-            { id: 4, title: "Monaco", artist: "Bad Bunny", genre: "reggaeton" },
-            { id: 5, title: "Goteo", artist: "Duki", genre: "trap" }
+            { id: 1, title: "Sin Destino Fijo", artist: "ElCiaa", genre: "Indie / Urbana" },
+            { id: 2, title: "Canción Loca", artist: "Duki", genre: "Trap" },
+            { id: 3, title: "Malamente", artist: "Rosalía", genre: "Pop" },
+            { id: 4, title: "Bzrp Music Sessions #53", artist: "Bizarrap", genre: "Urbano" },
+            { id: 5, title: "Monaco", artist: "Bad Bunny", genre: "Reggaetón" },
+            { id: 6, title: "Goteo", artist: "Duki", genre: "Trap" }
         ];
 
-        // Elementos del DOM
+        // Elementos DOM
         const authLockOverlay = document.getElementById('authLockOverlay');
         const userEmailSpan = document.getElementById('userEmail');
         const btnLogout = document.getElementById('btnLogout');
@@ -430,41 +413,52 @@
         const songsGrid = document.getElementById('songsGrid');
         const resultsCount = document.getElementById('resultsCount');
 
-        // ==========================================
-        // 🔒 PROTECCIÓN DE RUTA (MIDDLEWARE FRONTIER)
-        // ==========================================
         onAuthStateChanged(auth, (user) => {
             if (!user) {
-                console.log("Acceso denegado. Redirigiendo a login.html...");
                 window.location.replace("login.html");
             } else {
                 userEmailSpan.textContent = user.email;
-                // Retirar la pantalla de bloqueo
+                generarFiltrosDinamicos();
+                readURLParams();
                 authLockOverlay.style.opacity = '0';
                 setTimeout(() => authLockOverlay.style.display = 'none', 400);
-                
-                // Inicializar la búsqueda leyendo parámetros de la URL directamente
-                readURLParams();
             }
         });
 
-        // Evento Salir de Sesión
         btnLogout.addEventListener('click', () => {
             signOut(auth).then(() => window.location.replace("login.html"));
         });
 
-        // ==========================================
-        // 🔍 MOTOR DE BÚSQUEDA Y MANEJO DE URL
-        // ==========================================
-        
-        // Lee los parámetros existentes en la barra de direcciones al cargar
+        function generarFiltrosDinamicos() {
+            const artistasUnicos = new Set();
+            const generosUnicos = new Set();
+
+            dbCanciones.forEach(c => {
+                artistasUnicos.add(c.artist);
+                generosUnicos.add(c.genre);
+            });
+
+            Array.from(artistasUnicos).sort().forEach(artista => {
+                const opt = document.createElement('option');
+                opt.value = artista.toLowerCase().replace(/\s+/g, '-');
+                opt.textContent = artista;
+                filterArtist.appendChild(opt);
+            });
+
+            Array.from(generosUnicos).sort().forEach(genero => {
+                const opt = document.createElement('option');
+                opt.value = genero.toLowerCase().replace(/\s+/g, '-');
+                opt.textContent = genero;
+                filterGenre.appendChild(opt);
+            });
+        }
+
         function readURLParams() {
             const urlParams = new URLSearchParams(window.location.search);
             const searchParam = urlParams.get('search') || "";
             const artistParam = urlParams.get('artist') || "all";
             const genreParam = urlParams.get('genre') || "all";
 
-            // Sincronizar los inputs visualmente
             searchInput.value = searchParam;
             filterArtist.value = artistParam;
             filterGenre.value = genreParam;
@@ -472,7 +466,6 @@
             ejecutarBusqueda(searchParam, artistParam, genreParam);
         }
 
-        // Actualiza la URL dinámicamente y ejecuta el renderizado
         function actualizarFiltrosYURL() {
             const textoSearch = searchInput.value.trim();
             const artistaSelected = filterArtist.value;
@@ -480,7 +473,6 @@
 
             const url = new URL(window.location.href);
             
-            // Gestión limpia de Query Params
             if (textoSearch) url.searchParams.set('search', textoSearch);
             else url.searchParams.delete('search');
 
@@ -490,19 +482,20 @@
             if (generoSelected !== 'all') url.searchParams.set('genre', generoSelected);
             else url.searchParams.delete('genre');
 
-            // Modificar la URL en el navegador sin recargar la página entera
             window.history.replaceState({}, '', url);
-
             ejecutarBusqueda(textoSearch, artistaSelected, generoSelected);
         }
 
-        // Proceso lógico de filtrado
         function ejecutarBusqueda(query, artist, genre) {
             const resultados = dbCanciones.filter(cancion => {
                 const matchQuery = cancion.title.toLowerCase().includes(query.toLowerCase()) || 
                                    cancion.artist.toLowerCase().includes(query.toLowerCase());
-                const matchArtist = artist === 'all' || cancion.artist.toLowerCase() === artist;
-                const matchGenre = genre === 'all' || cancion.genre.toLowerCase() === genre;
+                
+                const cArtistKey = cancion.artist.toLowerCase().replace(/\s+/g, '-');
+                const cGenreKey = cancion.genre.toLowerCase().replace(/\s+/g, '-');
+
+                const matchArtist = artist === 'all' || cArtistKey === artist;
+                const matchGenre = genre === 'all' || cGenreKey === genre;
 
                 return matchQuery && matchArtist && matchGenre;
             });
@@ -510,7 +503,6 @@
             renderCards(resultados);
         }
 
-        // Renderizado Dinámico de Componentes en la Grid
         function renderCards(canciones) {
             songsGrid.innerHTML = "";
             resultsCount.textContent = canciones.length;
@@ -519,7 +511,7 @@
                 songsGrid.innerHTML = `
                     <div class="no-results">
                         <i data-lucide="frown" style="width: 40px; height: 40px; margin-bottom:10px;"></i>
-                        <p>No encontramos canciones que coincidan con los criterios aplicados.</p>
+                        <p>No encontramos canciones con esos criterios.</p>
                     </div>
                 `;
                 lucide.createIcons();
@@ -544,25 +536,22 @@
                     </button>
                 `;
                 
-                // Acción al dar clic en cantar
                 card.querySelector('.btn-sing').addEventListener('click', () => {
-                    alert(`Iniciando interfaz de Karaoke para: ${cancion.title}`);
-                    // Aquí redirigirías a tu visor de karaoke pasando el id, ej: window.location.href = `karaoke.html?id=${cancion.id}`;
+                    const artistaParam = encodeURIComponent(cancion.artist.toLowerCase().replace(/\s+/g, '-'));
+                    const songParam = encodeURIComponent(cancion.title.toLowerCase().replace(/\s+/g, '-'));
+                    window.location.href = `karaoke.html?artist=${artistaParam}&song=${songParam}`;
                 });
 
                 songsGrid.appendChild(card);
             });
 
-            // Re-renderizar iconos inyectados dinámicamente
             lucide.createIcons();
         }
 
-        // Listeners Reactivos
         searchInput.addEventListener('input', actualizarFiltrosYURL);
         filterArtist.addEventListener('change', actualizarFiltrosYURL);
         filterGenre.addEventListener('change', actualizarFiltrosYURL);
 
-        // Inicializar iconos estáticos al inicio
         lucide.createIcons();
     </script>
 </body>
