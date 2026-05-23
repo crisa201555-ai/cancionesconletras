@@ -43,10 +43,26 @@
         .btn-back:hover { color: var(--accent-cyan); }
 
         .song-title-nav {
-            text-align: center;
+            display: flex; align-items: center; gap: 20px; text-align: left;
         }
-        .song-title-nav h2 { margin: 0; font-size: 1.1rem; font-weight: 800; }
-        .song-title-nav p { margin: 2px 0 0 0; font-size: 0.8rem; color: var(--accent-cyan); font-weight: 600; text-transform: uppercase; }
+        .title-block h2 { margin: 0; font-size: 1.1rem; font-weight: 800; }
+        .title-block p { margin: 2px 0 0 0; font-size: 0.8rem; color: var(--accent-cyan); font-weight: 600; text-transform: uppercase; }
+
+        /* Botón "Sincronizar letra..." */
+        .btn-sync-tool {
+            display: flex; align-items: center; gap: 6px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--surface-border);
+            color: var(--text-main); padding: 8px 14px; border-radius: 10px;
+            font-size: 0.85rem; font-weight: 600; text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .btn-sync-tool:hover {
+            background: rgba(0, 242, 254, 0.1);
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.15);
+        }
 
         /* Área central de las letras (Scroll Dinámico) */
         .lyrics-container {
@@ -100,7 +116,6 @@
             display: flex; align-items: center; gap: 15px;
         }
 
-        /* Estilización moderna del reproductor nativo */
         audio {
             width: 100%;
             height: 40px;
@@ -122,10 +137,18 @@
             <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
             <span>Volver al buscador</span>
         </a>
+        
         <div class="song-title-nav">
-            <h2 id="trackTitle">Cargando canción...</h2>
-            <p id="trackArtist">Artista</p>
+            <div class="title-block">
+                <h2 id="trackTitle">Cargando canción...</h2>
+                <p id="trackArtist">Artista</p>
+            </div>
+            <a href="sendlyrics.html" class="btn-sync-tool" id="btnGoToSync">
+                <i data-lucide="clock" style="width: 14px; height: 14px;"></i>
+                <span>Sincronizar letra...</span>
+            </a>
         </div>
+        
         <div style="width: 140px;"></div> </nav>
 
     <div class="lyrics-container" id="lyricsContainer"></div>
@@ -139,12 +162,12 @@
     </div>
 
     <script>
-        // Base de datos de letras sincronizadas por tiempo (segundos)
+        // Base de datos de letras sincronizadas base
         const cancionesLetras = {
             "sin-destino-fijo": {
                 title: "Sin Destino Fijo",
                 artist: "ElCiaa",
-                audioSrc: "sindestinofijo.mp3", // Sube tu audio con este nombre exacto
+                audioSrc: "sindestinofijo.mp3",
                 composers: "Cristóbal Ignacio A.",
                 productors: "4K2",
                 lines: [
@@ -152,21 +175,14 @@
                     { time: 4, text: "Agarré mi mochila, dejé todo atrás" },
                     { time: 8, text: "No sé pa' dónde voy pero sé que voy a llegar" },
                     { time: 12, text: "El motor encendido, la mente en su lugar" },
-                    { time: 16, text: "El mundo es mi casa, no hay nada que temer" },
-                    { time: 20, text: "Salí de madrugada cuando el Sol ni apareció" },
-                    { time: 24, text: "Con la playlist lista y el tanque lleno, yo" },
-                    { time: 28, text: "Cada curva es un verso, cada ruta una canción" },
-                    { time: 32, text: "Viajando con el alma y el fuego en el corazón" },
-                    { time: 36, text: "Sin destino fijo, pero siempre adelante" },
-                    { time: 40, text: "Cada paso que doy me hace más gigante" },
-                    { time: 44, text: "La vida es el viaje, no el lugar de llegada" },
-                    { time: 48, text: "Voy con todo encendido y el alma desatada" }
+                    { time: 16, text: "El mundo es mi casa, no hay nada que temer" }
                 ]
             }
         };
 
-        // Capturar parámetros de la URL (?artist=elciaa&song=sin-destino-fijo)
+        // Capturar los parámetros actuales de la URL (?artist=elciaa&song=sin-destino-fijo)
         const urlParams = new URLSearchParams(window.location.search);
+        const artistKey = urlParams.get('artist') || 'elciaa';
         const songKey = urlParams.get('song') || 'sin-destino-fijo';
         const songData = cancionesLetras[songKey];
 
@@ -175,20 +191,21 @@
         const lyricsContainer = document.getElementById('lyricsContainer');
         const audioPlayer = document.getElementById('audioPlayer');
         const creditsBox = document.getElementById('creditsBox');
+        const btnGoToSync = document.getElementById('btnGoToSync');
+
+        // Configurar dinámicamente la ruta del botón usando los parámetros detectados
+        btnGoToSync.href = `sendlyrics.html?artist=${encodeURIComponent(artistKey)}&song=${encodeURIComponent(songKey)}`;
 
         if (songData) {
-            // Cargar Metadatos de la Canción
             trackTitle.textContent = songData.title;
             trackArtist.textContent = songData.artist;
             audioPlayer.src = songData.audioSrc;
             
-            // Cargar Créditos oficiales extraídos de tu PDF
             creditsBox.innerHTML = `
                 <span>Compositores: <strong>${songData.composers}</strong></span>
                 <span>Productores: <strong>${songData.productors}</strong></span>
             `;
 
-            // Inyectar Líneas de Letra en la interfaz
             songData.lines.forEach((line, index) => {
                 const p = document.createElement('p');
                 p.classList.add('lyric-line');
@@ -196,7 +213,6 @@
                 p.setAttribute('data-time', line.time);
                 p.id = `line-${index}`;
                 
-                // Si el usuario hace clic en una línea, el audio salta a ese segundo exacto
                 p.addEventListener('click', () => {
                     audioPlayer.currentTime = line.time;
                 });
@@ -204,12 +220,10 @@
                 lyricsContainer.appendChild(p);
             });
 
-            // Motor de Sincronización en Tiempo Real
             audioPlayer.addEventListener('timeupdate', () => {
                 const currentTime = audioPlayer.currentTime;
                 let activeIndex = -1;
 
-                // Buscar qué línea corresponde al segundo actual
                 for (let i = 0; i < songData.lines.length; i++) {
                     if (currentTime >= songData.lines[i].time) {
                         activeIndex = i;
@@ -218,12 +232,10 @@
                     }
                 }
 
-                // Actualizar clases visuales (active, passed, etc.)
                 songData.lines.forEach((_, index) => {
                     const el = document.getElementById(`line-${index}`);
                     if (index === activeIndex) {
                         el.className = 'lyric-line active';
-                        // Auto-scroll centrado suave
                         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     } else if (index < activeIndex) {
                         el.className = 'lyric-line passed';
@@ -234,12 +246,10 @@
             });
 
         } else {
-            // Si no se encuentra la canción en el mapeo
             trackTitle.textContent = "Canción no encontrada";
             lyricsContainer.innerHTML = `<p class="lyric-line active">Próximamente disponible en el catálogo.</p>`;
         }
 
-        // Inicializar iconos
         lucide.createIcons();
     </script>
 </body>
