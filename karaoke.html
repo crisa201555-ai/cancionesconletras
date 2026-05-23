@@ -20,114 +20,42 @@
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             background-color: var(--bg-dark);
             background-image: linear-gradient(180deg, rgba(155, 81, 224, 0.05) 0%, transparent 100%);
-            color: var(--text-main);
-            margin: 0; padding: 0; min-height: 100vh;
+            color: var(--text-main); margin: 0; padding: 0; min-height: 100vh;
             display: flex; flex-direction: column; overflow: hidden;
         }
 
-        /* Barra de navegación superior */
         nav {
-            background: rgba(11, 15, 24, 0.8);
-            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            background: rgba(11, 15, 24, 0.8); backdrop-filter: blur(15px);
             border-bottom: 1px solid var(--surface-border);
-            padding: 16px 40px; display: flex;
-            justify-content: space-between; align-items: center;
+            padding: 16px 40px; display: flex; justify-content: space-between; align-items: center;
             z-index: 10;
         }
 
-        .btn-back {
-            display: flex; align-items: center; gap: 8px;
-            color: var(--text-main); text-decoration: none;
-            font-size: 0.95rem; font-weight: 600; transition: color 0.2s;
-        }
+        .btn-back { display: flex; align-items: center; gap: 8px; color: var(--text-main); text-decoration: none; font-size: 0.95rem; font-weight: 600; }
         .btn-back:hover { color: var(--accent-cyan); }
 
-        .song-title-nav {
-            display: flex; align-items: center; gap: 20px; text-align: left;
-        }
+        .song-title-nav { display: flex; align-items: center; gap: 20px; text-align: left; }
         .title-block h2 { margin: 0; font-size: 1.1rem; font-weight: 800; }
         .title-block p { margin: 2px 0 0 0; font-size: 0.8rem; color: var(--accent-cyan); font-weight: 600; text-transform: uppercase; }
 
-        /* Botón "Sincronizar letra..." */
         .btn-sync-tool {
-            display: flex; align-items: center; gap: 6px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--surface-border);
-            color: var(--text-main); padding: 8px 14px; border-radius: 10px;
-            font-size: 0.85rem; font-weight: 600; text-decoration: none;
-            transition: all 0.2s ease;
+            display: flex; align-items: center; gap: 6px; background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--surface-border); color: var(--text-main); padding: 8px 14px; border-radius: 10px;
+            font-size: 0.85rem; font-weight: 600; text-decoration: none; transition: all 0.2s ease;
         }
-        .btn-sync-tool:hover {
-            background: rgba(0, 242, 254, 0.1);
-            border-color: var(--accent-cyan);
-            color: var(--accent-cyan);
-            box-shadow: 0 0 15px rgba(0, 242, 254, 0.15);
-        }
+        .btn-sync-tool:hover { background: rgba(0, 242, 254, 0.1); border-color: var(--accent-cyan); color: var(--accent-cyan); box-shadow: 0 0 15px rgba(0, 242, 254, 0.15); }
 
-        /* Área central de las letras (Scroll Dinámico) */
-        .lyrics-container {
-            flex-grow: 1;
-            overflow-y: auto;
-            padding: 120px 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 28px;
-            scroll-behavior: smooth;
-        }
-
-        /* Ocultar barra de scroll para inmersión total */
+        .lyrics-container { flex-grow: 1; overflow-y: auto; padding: 120px 20px; display: flex; flex-direction: column; align-items: center; gap: 28px; scroll-behavior: smooth; }
         .lyrics-container::-webkit-scrollbar { display: none; }
 
-        /* Estilo base de cada línea de la letra */
-        .lyric-line {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--text-muted);
-            text-align: center;
-            max-width: 700px;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
-        }
-
-        /* Línea actualmente activa (Resplandor Neón Violeta/Cian) */
-        .lyric-line.active {
-            color: #ffffff;
-            font-size: 2.3rem;
-            transform: scale(1.05);
-            text-shadow: 0 0 20px rgba(0, 242, 254, 0.6), 0 0 40px rgba(155, 81, 224, 0.4);
-        }
-
-        /* Líneas ya cantadas o siguientes */
+        .lyric-line { font-size: 1.8rem; font-weight: 700; color: var(--text-muted); text-align: center; max-width: 700px; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; }
+        .lyric-line.active { color: #ffffff; font-size: 2.3rem; transform: scale(1.05); text-shadow: 0 0 20px rgba(0, 242, 254, 0.6), 0 0 40px rgba(155, 81, 224, 0.4); }
         .lyric-line.passed { color: rgba(255, 255, 255, 0.2); }
 
-        /* Control de Audio Flotante en la Parte Inferior */
-        .controls-footer {
-            background: rgba(11, 15, 24, 0.85);
-            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            border-top: 1px solid var(--surface-border);
-            padding: 24px 40px;
-            display: flex; flex-direction: column; align-items: center; gap: 15px;
-            z-index: 10;
-        }
-
-        .audio-wrapper {
-            width: 100%; max-width: 650px;
-            display: flex; align-items: center; gap: 15px;
-        }
-
-        audio {
-            width: 100%;
-            height: 40px;
-            border-radius: 30px;
-            outline: none;
-        }
-
-        .credits-box {
-            font-size: 0.85rem; color: var(--text-muted);
-            display: flex; gap: 20px; font-weight: 500;
-        }
-        .credits-box span strong { color: rgba(255,255,255,0.7); }
+        .controls-footer { background: rgba(11, 15, 24, 0.85); backdrop-filter: blur(20px); border-top: 1px solid var(--surface-border); padding: 24px 40px; display: flex; flex-direction: column; align-items: center; gap: 15px; z-index: 10; }
+        .audio-wrapper { width: 100%; max-width: 650px; display: flex; align-items: center; gap: 15px; }
+        audio { width: 100%; height: 40px; border-radius: 30px; outline: none; }
+        .credits-box { font-size: 0.85rem; color: var(--text-muted); display: flex; gap: 20px; font-weight: 500; }
     </style>
 </head>
 <body>
@@ -143,13 +71,13 @@
                 <h2 id="trackTitle">Cargando canción...</h2>
                 <p id="trackArtist">Artista</p>
             </div>
-            <a href="sendlyrics.html" class="btn-sync-tool" id="btnGoToSync">
+            <a href="karaoke/sendlyrics.html" class="btn-sync-tool" id="btnGoToSync">
                 <i data-lucide="clock" style="width: 14px; height: 14px;"></i>
                 <span>Sincronizar letra...</span>
             </a>
         </div>
-        
-        <div style="width: 140px;"></div> </nav>
+        <div style="width: 140px;"></div>
+    </nav>
 
     <div class="lyrics-container" id="lyricsContainer"></div>
 
@@ -157,12 +85,10 @@
         <div class="audio-wrapper">
             <audio id="audioPlayer" controls></audio>
         </div>
-        <div class="credits-box" id="creditsBox">
-            </div>
+        <div class="credits-box" id="creditsBox"></div>
     </div>
 
     <script>
-        // Base de datos de letras sincronizadas base
         const cancionesLetras = {
             "sin-destino-fijo": {
                 title: "Sin Destino Fijo",
@@ -172,15 +98,11 @@
                 productors: "4K2",
                 lines: [
                     { time: 0, text: "🎵 (Instrumental)" },
-                    { time: 4, text: "Agarré mi mochila, dejé todo atrás" },
-                    { time: 8, text: "No sé pa' dónde voy pero sé que voy a llegar" },
-                    { time: 12, text: "El motor encendido, la mente en su lugar" },
-                    { time: 16, text: "El mundo es mi casa, no hay nada que temer" }
+                    { time: 4, text: "Agarré mi mochila, dejé todo atrás" }
                 ]
             }
         };
 
-        // Capturar los parámetros actuales de la URL (?artist=elciaa&song=sin-destino-fijo)
         const urlParams = new URLSearchParams(window.location.search);
         const artistKey = urlParams.get('artist') || 'elciaa';
         const songKey = urlParams.get('song') || 'sin-destino-fijo';
@@ -193,45 +115,31 @@
         const creditsBox = document.getElementById('creditsBox');
         const btnGoToSync = document.getElementById('btnGoToSync');
 
-        // Configurar dinámicamente la ruta del botón usando los parámetros detectados
-        btnGoToSync.href = `sendlyrics.html?artist=${encodeURIComponent(artistKey)}&song=${encodeURIComponent(songKey)}`;
+        // Construcción de la URL relativa correcta hacia el subdirectorio
+        btnGoToSync.href = `karaoke/sendlyrics.html?artist=${encodeURIComponent(artistKey)}&song=${encodeURIComponent(songKey)}`;
 
         if (songData) {
             trackTitle.textContent = songData.title;
             trackArtist.textContent = songData.artist;
             audioPlayer.src = songData.audioSrc;
             
-            creditsBox.innerHTML = `
-                <span>Compositores: <strong>${songData.composers}</strong></span>
-                <span>Productores: <strong>${songData.productors}</strong></span>
-            `;
+            creditsBox.innerHTML = `<span>Compositores: <strong>${songData.composers}</strong></span> <span>Productores: <strong>${songData.productors}</strong></span>`;
 
             songData.lines.forEach((line, index) => {
                 const p = document.createElement('p');
                 p.classList.add('lyric-line');
                 p.textContent = line.text;
-                p.setAttribute('data-time', line.time);
                 p.id = `line-${index}`;
-                
-                p.addEventListener('click', () => {
-                    audioPlayer.currentTime = line.time;
-                });
-
+                p.addEventListener('click', () => { audioPlayer.currentTime = line.time; });
                 lyricsContainer.appendChild(p);
             });
 
             audioPlayer.addEventListener('timeupdate', () => {
                 const currentTime = audioPlayer.currentTime;
                 let activeIndex = -1;
-
                 for (let i = 0; i < songData.lines.length; i++) {
-                    if (currentTime >= songData.lines[i].time) {
-                        activeIndex = i;
-                    } else {
-                        break;
-                    }
+                    if (currentTime >= songData.lines[i].time) { activeIndex = i; } else { break; }
                 }
-
                 songData.lines.forEach((_, index) => {
                     const el = document.getElementById(`line-${index}`);
                     if (index === activeIndex) {
@@ -244,12 +152,10 @@
                     }
                 });
             });
-
         } else {
             trackTitle.textContent = "Canción no encontrada";
-            lyricsContainer.innerHTML = `<p class="lyric-line active">Próximamente disponible en el catálogo.</p>`;
+            lyricsContainer.innerHTML = `<p class="lyric-line active">Próximamente disponible.</p>`;
         }
-
         lucide.createIcons();
     </script>
 </body>
