@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modo Karaoke | Canciones Con Letras</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg-dark: #04060a;
+            --surface: rgba(18, 24, 38, 0.6);
+            --surface-border: rgba(255, 255, 255, 0.08);
+            --accent-cyan: #00f2fe;
+            --accent-purple: #9b51e0;
+            --text-main: #f3f4f6;
+            --text-muted: #4b5563;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-dark);
+            background-image: linear-gradient(180deg, rgba(155, 81, 224, 0.05) 0%, transparent 100%);
+            color: var(--text-main);
+            margin: 0; padding: 0; min-height: 100vh;
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+
+        /* Barra de navegación superior */
+        nav {
+            background: rgba(11, 15, 24, 0.8);
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border-bottom: 1px solid var(--surface-border);
+            padding: 16px 40px; display: flex;
+            justify-content: space-between; align-items: center;
+            z-index: 10;
+        }
+
+        .btn-back {
+            display: flex; align-items: center; gap: 8px;
+            color: var(--text-main); text-decoration: none;
+            font-size: 0.95rem; font-weight: 600; transition: color 0.2s;
+        }
+        .btn-back:hover { color: var(--accent-cyan); }
+
+        .song-title-nav {
+            text-align: center;
+        }
+        .song-title-nav h2 { margin: 0; font-size: 1.1rem; font-weight: 800; }
+        .song-title-nav p { margin: 2px 0 0 0; font-size: 0.8rem; color: var(--accent-cyan); font-weight: 600; text-transform: uppercase; }
+
+        /* Área central de las letras (Scroll Dinámico) */
+        .lyrics-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 120px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 28px;
+            scroll-behavior: smooth;
+        }
+
+        /* Ocultar barra de scroll para inmersión total */
+        .lyrics-container::-webkit-scrollbar { display: none; }
+
+        /* Estilo base de cada línea de la letra */
+        .lyric-line {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-align: center;
+            max-width: 700px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        /* Línea actualmente activa (Resplandor Neón Violeta/Cian) */
+        .lyric-line.active {
+            color: #ffffff;
+            font-size: 2.3rem;
+            transform: scale(1.05);
+            text-shadow: 0 0 20px rgba(0, 242, 254, 0.6), 0 0 40px rgba(155, 81, 224, 0.4);
+        }
+
+        /* Líneas ya cantadas o siguientes */
+        .lyric-line.passed { color: rgba(255, 255, 255, 0.2); }
+
+        /* Control de Audio Flotante en la Parte Inferior */
+        .controls-footer {
+            background: rgba(11, 15, 24, 0.85);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--surface-border);
+            padding: 24px 40px;
+            display: flex; flex-direction: column; align-items: center; gap: 15px;
+            z-index: 10;
+        }
+
+        .audio-wrapper {
+            width: 100%; max-width: 650px;
+            display: flex; align-items: center; gap: 15px;
+        }
+
+        /* Estilización moderna del reproductor nativo */
+        audio {
+            width: 100%;
+            height: 40px;
+            border-radius: 30px;
+            outline: none;
+        }
+
+        .credits-box {
+            font-size: 0.85rem; color: var(--text-muted);
+            display: flex; gap: 20px; font-weight: 500;
+        }
+        .credits-box span strong { color: rgba(255,255,255,0.7); }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="home.html" class="btn-back">
+            <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
+            <span>Volver al buscador</span>
+        </a>
+        <div class="song-title-nav">
+            <h2 id="trackTitle">Cargando canción...</h2>
+            <p id="trackArtist">Artista</p>
+        </div>
+        <div style="width: 140px;"></div> </nav>
+
+    <div class="lyrics-container" id="lyricsContainer"></div>
+
+    <div class="controls-footer">
+        <div class="audio-wrapper">
+            <audio id="audioPlayer" controls></audio>
+        </div>
+        <div class="credits-box" id="creditsBox">
+            </div>
+    </div>
+
+    <script>
+        // Base de datos de letras sincronizadas por tiempo (segundos)
+        const cancionesLetras = {
+            "sin-destino-fijo": {
+                title: "Sin Destino Fijo",
+                artist: "ElCiaa",
+                audioSrc: "sindestinofijo.mp3", // Sube tu audio con este nombre exacto
+                composers: "Cristóbal Ignacio A.",
+                productors: "4K2",
+                lines: [
+                    { time: 0, text: "🎵 (Instrumental)" },
+                    { time: 4, text: "Agarré mi mochila, dejé todo atrás" },
+                    { time: 8, text: "No sé pa' dónde voy pero sé que voy a llegar" },
+                    { time: 12, text: "El motor encendido, la mente en su lugar" },
+                    { time: 16, text: "El mundo es mi casa, no hay nada que temer" },
+                    { time: 20, text: "Salí de madrugada cuando el Sol ni apareció" },
+                    { time: 24, text: "Con la playlist lista y el tanque lleno, yo" },
+                    { time: 28, text: "Cada curva es un verso, cada ruta una canción" },
+                    { time: 32, text: "Viajando con el alma y el fuego en el corazón" },
+                    { time: 36, text: "Sin destino fijo, pero siempre adelante" },
+                    { time: 40, text: "Cada paso que doy me hace más gigante" },
+                    { time: 44, text: "La vida es el viaje, no el lugar de llegada" },
+                    { time: 48, text: "Voy con todo encendido y el alma desatada" }
+                ]
+            }
+        };
+
+        // Capturar parámetros de la URL (?artist=elciaa&song=sin-destino-fijo)
+        const urlParams = new URLSearchParams(window.location.search);
+        const songKey = urlParams.get('song') || 'sin-destino-fijo';
+        const songData = cancionesLetras[songKey];
+
+        const trackTitle = document.getElementById('trackTitle');
+        const trackArtist = document.getElementById('trackArtist');
+        const lyricsContainer = document.getElementById('lyricsContainer');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const creditsBox = document.getElementById('creditsBox');
+
+        if (songData) {
+            // Cargar Metadatos de la Canción
+            trackTitle.textContent = songData.title;
+            trackArtist.textContent = songData.artist;
+            audioPlayer.src = songData.audioSrc;
+            
+            // Cargar Créditos oficiales extraídos de tu PDF
+            creditsBox.innerHTML = `
+                <span>Compositores: <strong>${songData.composers}</strong></span>
+                <span>Productores: <strong>${songData.productors}</strong></span>
+            `;
+
+            // Inyectar Líneas de Letra en la interfaz
+            songData.lines.forEach((line, index) => {
+                const p = document.createElement('p');
+                p.classList.add('lyric-line');
+                p.textContent = line.text;
+                p.setAttribute('data-time', line.time);
+                p.id = `line-${index}`;
+                
+                // Si el usuario hace clic en una línea, el audio salta a ese segundo exacto
+                p.addEventListener('click', () => {
+                    audioPlayer.currentTime = line.time;
+                });
+
+                lyricsContainer.appendChild(p);
+            });
+
+            // Motor de Sincronización en Tiempo Real
+            audioPlayer.addEventListener('timeupdate', () => {
+                const currentTime = audioPlayer.currentTime;
+                let activeIndex = -1;
+
+                // Buscar qué línea corresponde al segundo actual
+                for (let i = 0; i < songData.lines.length; i++) {
+                    if (currentTime >= songData.lines[i].time) {
+                        activeIndex = i;
+                    } else {
+                        break;
+                    }
+                }
+
+                // Actualizar clases visuales (active, passed, etc.)
+                songData.lines.forEach((_, index) => {
+                    const el = document.getElementById(`line-${index}`);
+                    if (index === activeIndex) {
+                        el.className = 'lyric-line active';
+                        // Auto-scroll centrado suave
+                        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    } else if (index < activeIndex) {
+                        el.className = 'lyric-line passed';
+                    } else {
+                        el.className = 'lyric-line';
+                    }
+                });
+            });
+
+        } else {
+            // Si no se encuentra la canción en el mapeo
+            trackTitle.textContent = "Canción no encontrada";
+            lyricsContainer.innerHTML = `<p class="lyric-line active">Próximamente disponible en el catálogo.</p>`;
+        }
+
+        // Inicializar iconos
+        lucide.createIcons();
+    </script>
+</body>
+</html>
