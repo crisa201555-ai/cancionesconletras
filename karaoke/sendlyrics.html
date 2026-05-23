@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sincronizador de Letras | SendLyrics</title>
+    <title>Sincronizador Avanzado | SendLyrics</title>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         :root {
@@ -12,6 +12,7 @@
             --surface-border: rgba(255, 255, 255, 0.08);
             --accent-cyan: #00f2fe;
             --accent-purple: #9b51e0;
+            --accent-red: #ff4d6d;
             --text-main: #f3f4f6;
             --text-secondary: #9ca3af;
         }
@@ -19,7 +20,7 @@
         body {
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             background-color: var(--bg-dark);
-            background-image: radial-gradient(at 50% 0%, rgba(0, 242, 254, 0.05) 0px, transparent 50%);
+            background-image: radial-gradient(at 50% 0%, rgba(155, 81, 224, 0.05) 0px, transparent 50%);
             color: var(--text-main); margin: 0; padding: 0; min-height: 100vh;
         }
 
@@ -32,146 +33,220 @@
 
         .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
 
-        .panel { background: var(--surface); border: 1px solid var(--surface-border); border-radius: 24px; padding: 30px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); }
-        h3 { margin-top: 0; font-size: 1.3rem; display: flex; align-items: center; gap: 10px; color: #fff; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px; }
+        .panel { background: var(--surface); border: 1px solid var(--surface-border); border-radius: 24px; padding: 30px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); display: flex; flex-direction: column; gap: 20px; }
+        h3 { margin: 0; font-size: 1.3rem; display: flex; align-items: center; gap: 10px; color: #fff; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px; }
 
-        textarea { width: 100%; height: 280px; background: rgba(7, 10, 17, 0.85); border: 1px solid var(--surface-border); border-radius: 14px; color: white; padding: 15px; font-size: 1rem; resize: none; box-sizing: border-box; font-family: inherit; }
+        .form-group { display: flex; flex-direction: column; gap: 8px; }
+        .form-group label { font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        select { width: 100%; padding: 14px; background: rgba(7, 10, 17, 0.85); border: 1px solid var(--surface-border); border-radius: 12px; color: white; font-size: 1rem; outline: none; cursor: pointer; font-weight: 600; }
+        select option { background: #0b111e; color: #fff; }
+
+        textarea { width: 100%; height: 220px; background: rgba(7, 10, 17, 0.85); border: 1px solid var(--surface-border); border-radius: 14px; color: white; padding: 15px; font-size: 1rem; resize: none; box-sizing: border-box; font-family: inherit; }
         textarea:focus { outline: none; border-color: var(--accent-purple); }
 
-        .audio-input-box { margin-top: 20px; display: flex; flex-direction: column; gap: 8px; }
-        .audio-input-box label { font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; }
-        audio { width: 100%; margin-top: 10px; }
+        audio { width: 100%; margin-top: 5px; }
 
-        /* Estilos del Sincronizador en Vivo */
-        .sync-area { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 300px; background: rgba(0,0,0,0.3); border-radius: 16px; border: 2px dashed rgba(255,255,255,0.05); position: relative; padding: 20px; text-align: center; box-sizing: border-box; }
-        .sync-area.recording { border-color: var(--accent-cyan); background: rgba(0, 242, 254, 0.02); }
-
-        .current-lyric { font-size: 1.6rem; font-weight: 800; color: var(--text-secondary); transition: all 0.2s; max-width: 100%; }
-        .current-lyric.holding { color: #fff; transform: scale(1.05); text-shadow: 0 0 20px var(--accent-cyan); }
-        .next-lyric { font-size: 1rem; color: rgba(255,255,255,0.2); margin-top: 15px; font-style: italic; }
-
-        .space-indicator { position: absolute; bottom: 20px; font-size: 0.8rem; font-weight: 700; background: rgba(255,255,255,0.05); padding: 8px 16px; border-radius: 20px; color: var(--text-secondary); border: 1px solid rgba(255,255,255,0.05); letter-spacing: 0.5px; }
-        .space-indicator.active { background: var(--accent-cyan); color: #04060a; font-weight: 800; box-shadow: 0 0 15px rgba(0, 242, 254, 0.4); }
-
-        .btn-start { background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple)); border: none; color: #04060a; padding: 14px 28px; border-radius: 12px; font-weight: 700; font-size: 1rem; cursor: pointer; display: flex; align-items: center; gap: 8px; margin-top: 20px; transition: all 0.3s; }
+        .btn-start { background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple)); border: none; color: #04060a; padding: 14px 28px; border-radius: 12px; font-weight: 700; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.3s; }
         .btn-start:hover { transform: translateY(-2px); filter: brightness(1.1); }
 
-        /* Consola de Salida */
-        .output-box { background: #070a11; border-radius: 14px; padding: 15px; font-family: monospace; font-size: 0.85rem; color: #a5b4fc; height: 350px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.05); white-space: pre-wrap; margin-top: 20px; }
+        /* Consola del Sincronizador */
+        .sync-area { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 260px; background: rgba(0,0,0,0.3); border-radius: 16px; border: 2px dashed rgba(255,255,255,0.05); position: relative; padding: 20px; text-align: center; box-sizing: border-box; }
+        
+        .current-lyric { font-size: 1.5rem; font-weight: 800; color: var(--text-secondary); transition: all 0.2s; max-width: 100%; }
+        .current-lyric.holding { color: #fff; transform: scale(1.04); text-shadow: 0 0 20px var(--accent-cyan); }
+        .next-lyric { font-size: 0.95rem; color: rgba(255,255,255,0.2); margin-top: 12px; font-style: italic; }
+
+        .space-indicator { position: absolute; bottom: 15px; font-size: 0.75rem; font-weight: 700; background: rgba(255,255,255,0.04); padding: 6px 14px; border-radius: 20px; color: var(--text-secondary); border: 1px solid rgba(255,255,255,0.05); }
+        .space-indicator.active { background: var(--accent-cyan); color: #04060a; font-weight: 800; box-shadow: 0 0 15px rgba(0, 242, 254, 0.4); }
+
+        /* Botones de Control de Errores */
+        .control-tools { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .btn-tool { background: rgba(255,255,255,0.03); border: 1px solid var(--surface-border); color: #fff; padding: 12px; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; }
+        .btn-tool:hover { background: rgba(255,255,255,0.06); }
+        .btn-tool.danger:hover { background: rgba(255, 77, 109, 0.1); border-color: var(--accent-red); color: var(--accent-red); }
+
+        .output-box { background: #070a11; border-radius: 14px; padding: 15px; font-family: monospace; font-size: 0.85rem; color: #a5b4fc; height: 260px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.05); white-space: pre-wrap; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
     <nav>
-        <div class="nav-title"><i data-lucide="layers" style="width: 16px; display: inline-block; vertical-align: middle; margin-right: 6px;"></i>SENDLYRICS // Sincronizador Oficial</div>
+        <div class="nav-title"><i data-lucide="layers" style="width: 16px; display: inline-block; vertical-align: middle; margin-right: 6px;"></i>SENDLYRICS // Sincronizador de Catálogo</div>
         <a href="home.html" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 600;">Volver al Inicio</a>
     </nav>
 
     <div class="container">
         <div class="panel">
-            <h3><i data-lucide="file-text"></i> 1. Datos de la Pista</h3>
-            <div style="margin-bottom: 15px;">
-                <textarea id="rawLyrics" placeholder="Pega los versos aquí limpios (uno por línea)...&#10;&#10;Ejemplo:&#10;Agarré mi mochila, dejé todo atrás&#10;No sé pa' dónde voy pero sé que voy a llegar"></textarea>
+            <h3><i data-lucide="music-2"></i> 1. Selección y Letra</h3>
+            
+            <div class="form-group">
+                <label for="songSelector">Selecciona una Canción del Catálogo</label>
+                <select id="songSelector">
+                    <option value="" disabled selected>-- Elige una pista --</option>
+                    <option value="sin-destino-fijo">Sin Destino Fijo (Debut)</option>
+                    <option value="todo-es-feliz">Todo Es Feliz (ft. MCx)</option>
+                    <option value="solo">Solo</option>
+                    <option value="horizonte-neon">Horizonte de Neón</option>
+                    <option value="concepcion">Concepción</option>
+                    <option value="sin-frenos">Sin Frenos</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Letra Limpia Editable</label>
+                <textarea id="lyricsInput" placeholder="La letra aparecerá automáticamente al elegir una canción, o puedes escribir una propia aquí línea por línea..."></textarea>
             </div>
             
-            <div class="audio-input-box">
-                <label>Selecciona Archivo de Audio MP3</label>
-                <input type="file" id="audioFile" accept="audio/*" style="color: var(--text-secondary);">
-                <audio id="audioTrack" controls></audio>
+            <div class="form-group">
+                <label>Reproductor de Audio Vinculado</label>
+                <audio id="audioElement" controls></audio>
             </div>
 
             <button class="btn-start" id="btnPrepare">
-                <i data-lucide="play-circle"></i>
-                <span>Preparar Sincronización</span>
+                <i data-lucide="activity"></i>
+                <span>Montar en Sincronizador</span>
             </button>
         </div>
 
         <div class="panel">
-            <h3><i data-lucide="cpu"></i> 2. Controladores en Vivo</h3>
+            <h3><i data-lucide="sliders"></i> 2. Grabación en Vivo</h3>
             
             <div class="sync-area" id="syncArea">
-                <div class="current-lyric" id="currentLyricDisplay">Ninguna letra cargada</div>
+                <div class="current-lyric" id="currentLyricDisplay">Selecciona una pista y móntala para empezar</div>
                 <div class="next-lyric" id="nextLyricDisplay">--</div>
-                <div class="space-indicator" id="spaceIndicator">BARRA ESPACIADORA (SUELTA)</div>
+                <div class="space-indicator" id="spaceIndicator">BARRA ESPACIADORA DE CONTROL</div>
             </div>
 
-            <h3 style="margin-top: 30px; border: none; padding: 0;"><i data-lucide="code"></i> 3. Resultado Final JSON</h3>
-            <div class="output-box" id="outputJson">// El código estructurado de tiempos aparecerá aquí...</div>
+            <div class="control-tools">
+                <button class="btn-tool" id="btnUndoLine" title="Borra el tiempo del último verso capturado y retrocede el audio">
+                    <i data-lucide="undo-2"></i>
+                    <span>Borrar Último Verso</span>
+                </button>
+                <button class="btn-tool danger" id="btnResetAll">
+                    <i data-lucide="trash-2"></i>
+                    <span>Resetear Todo</span>
+                </button>
+            </div>
+
+            <h3><i data-lucide="braces"></i> 3. Código JSON Generado</h3>
+            <div class="output-box" id="jsonOutput">// El código con marcas de tiempo aparecerá aquí al finalizar...</div>
         </div>
     </div>
 
     <script>
+        // Letras por defecto pre-cargadas basadas de forma exacta en tu material oficial
+        const baseLetrasCatalogo = {
+            "sin-destino-fijo": `Agarré mi mochila, dejé todo atrás
+No sé pa' dónde voy pero sé que voy a llegar
+El motor encendido, la mente en su lugar
+El mundo es mi casa, no hay nada que temer
+Salí de madrugada cuando el Sol ni apareció
+Con la playlist lista y el tanque lleno, yo
+Cada curva es un verso, cada ruta una canción
+Viajando con el alma y el fuego en el corazón
+Ciudades que no conozco, gente nueva pa' encontrar
+Cada abrazo de extraño me recuerda respirar
+No hay prisa, no hay reloj, solo el viento y la verdad
+Soy libre cuando muevo y me alejo de la ciudad
+Sin destino fijo, pero siempre adelante
+Cada paso que doy me hace más gigante
+La vida es el viaje, no el lugar de llegada
+Voy con todo encendido y el alma desatada`,
+            
+            "todo-es-feliz": `Todo es feliz cuando estamos cantando
+La música fluye, la gente bailando
+MCx en el ritmo, ElCiaa rimando
+Dejando los miedos que nos van frenando`,
+            
+            "solo": `Camino solo en esta gran ciudad
+Buscando respuestas, buscando verdad
+Pero no me detengo, mantengo el control
+Sabiendo que pronto saldrá un nuevo Sol`,
+            
+            "horizonte-neon": `Horizonte de neón, las luces brillando
+El futuro en mis manos se está diseñando`,
+            
+            "concepcion": `Recordando las calles donde todo empezó
+La cuna del ritmo que me vio crecer yo`,
+            
+            "sin-frenos": `Acelerando el ritmo, voy sin frenar
+Nadie en esta pista me va a parar`
+        };
+
         let linesArray = [];
         let currentLineIndex = 0;
         let synchronizedLines = [];
         let isSyncRunning = false;
-        let currentStartTime = 0;
+        let capturedTime = 0;
 
-        const rawLyrics = document.getElementById('rawLyrics');
-        const audioFile = document.getElementById('audioFile');
-        const audioTrack = document.getElementById('audioTrack');
+        const songSelector = document.getElementById('songSelector');
+        const lyricsInput = document.getElementById('lyricsInput');
+        const audioElement = document.getElementById('audioElement');
         const btnPrepare = document.getElementById('btnPrepare');
-        const syncArea = document.getElementById('syncArea');
         const currentLyricDisplay = document.getElementById('currentLyricDisplay');
         const nextLyricDisplay = document.getElementById('nextLyricDisplay');
         const spaceIndicator = document.getElementById('spaceIndicator');
-        const outputJson = document.getElementById('outputJson');
+        const jsonOutput = document.getElementById('jsonOutput');
+        
+        const btnUndoLine = document.getElementById('btnUndoLine');
+        const btnResetAll = document.getElementById('btnResetAll');
 
-        // Cargar audio local dinámicamente
-        audioFile.addEventListener('change', function(e){
-            const file = e.target.files[0];
-            if(file){
-                audioTrack.src = URL.createObjectURL(file);
+        // 1. Cambio de canción: Cambia MP3 y carga texto automáticamente
+        songSelector.addEventListener('change', (e) => {
+            const trackKey = e.target.value;
+            if(baseLetrasCatalogo[trackKey]) {
+                lyricsInput.value = baseLetrasCatalogo[trackKey];
+                // Cambia automáticamente la pista de audio asignada
+                audioElement.src = `${trackKey}.mp3`;
+                jsonOutput.textContent = `// Se cargó el archivo ${trackKey}.mp3. Listo para montar.`;
             }
         });
 
-        // Configurar líneas listas para capturar datos
+        // 2. Montar datos en la consola activa
         btnPrepare.addEventListener('click', () => {
-            const text = rawLyrics.value.trim();
-            if(!text) { alert("Por favor inserta letras primero."); return; }
-            
-            // Separar renglones eliminando espacios vacíos
-            linesArray = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            const rawText = lyricsInput.value.trim();
+            if(!rawText) { alert("Agrega o selecciona una letra primero."); return; }
+
+            linesArray = rawText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
             currentLineIndex = 0;
             synchronizedLines = [];
             isSyncRunning = true;
-            
-            updateDisplay();
-            outputJson.textContent = "// Listos. Dale 'Play' al reproductor de audio y mantén presionado ESPACIO cuando empiece la primera línea.";
-            audioTrack.focus();
+
+            updateConsoleView();
+            jsonOutput.textContent = "// Consola armada. Dale 'Play' al reproductor y mantén presionado ESPACIO al cantar cada verso.";
+            audioElement.focus();
         });
 
-        function updateDisplay() {
+        // 3. Renderizador de pantalla de versos
+        function updateConsoleView() {
             if (currentLineIndex < linesArray.length) {
                 currentLyricDisplay.textContent = linesArray[currentLineIndex];
-                currentLyricDisplay.style.opacity = "1";
                 if (currentLineIndex + 1 < linesArray.length) {
                     nextLyricDisplay.textContent = "Siguiente: " + linesArray[currentLineIndex + 1];
                 } else {
-                    nextLyricDisplay.textContent = "Último verso";
+                    nextLyricDisplay.textContent = "Último verso de la pista";
                 }
             } else {
-                currentLyricDisplay.textContent = "¡Sincronización Terminada con Éxito!";
-                nextLyricDisplay.textContent = "Revisa el JSON abajo.";
+                currentLyricDisplay.textContent = "¡Sincronización Completada con Éxito!";
+                nextLyricDisplay.textContent = "--";
                 isSyncRunning = false;
-                exportJSON();
+                buildFinalJSON();
             }
         }
 
-        // --- MANEJO DETALLADO DEL ESPACIO (PRESIONADO / SOLTADO) ---
+        // 4. Captura interactiva usando la Barra de Espacio
         window.addEventListener('keydown', (e) => {
             if (e.code === 'Space' && isSyncRunning) {
-                // Evitar el scroll por defecto del navegador al presionar espacio
-                e.preventDefault(); 
-                
-                if (e.repeat) return; // Evita disparos continuos repetidos del teclado
+                e.preventDefault(); // Evita que baje la página con el espacio
+                if (e.repeat) return;
 
-                currentStartTime = Math.round(audioTrack.currentTime);
-                
-                // Efecto visual activado
+                // Captura el segundo exacto en el momento inicial en que empieza la línea
+                capturedTime = Math.round(audioElement.currentTime);
+
                 currentLyricDisplay.classList.add('holding');
                 spaceIndicator.classList.add('active');
-                spaceIndicator.textContent = "GRABANDO TIEMPO... (MANTÉN PRESIONADO)";
+                spaceIndicator.textContent = "CANTANDO... (MANTÉN PRESIONADO)";
             }
         });
 
@@ -179,27 +254,65 @@
             if (e.code === 'Space' && isSyncRunning) {
                 e.preventDefault();
 
-                // Quitar efectos visuales
                 currentLyricDisplay.classList.remove('holding');
                 spaceIndicator.classList.remove('active');
                 spaceIndicator.textContent = "BARRA ESPACIADORA (SUELTA)";
 
-                // Guardar la línea con el segundo en que se inició la pulsación
+                // Guardar línea procesada
                 synchronizedLines.push({
-                    time: currentStartTime,
+                    time: capturedTime,
                     text: linesArray[currentLineIndex]
                 });
 
-                // Avanzar de verso
                 currentLineIndex++;
-                updateDisplay();
+                updateConsoleView();
+                buildFinalJSON(); // Muestra el progreso en vivo en el cuadro de texto inferior
             }
         });
 
-        function exportJSON() {
-            // Formatea el código JSON limpio listo para meter a tu objeto general del karaoke.html
-            const formattedJson = JSON.stringify(synchronizedLines, null, 4);
-            outputJson.textContent = formattedJson;
+        // 5. BORRAR ÚLTIMO VERSO (Reseteo parcial inteligente)
+        function undoLastLine() {
+            if (synchronizedLines.length > 0 && isSyncRunning) {
+                // Sacar el último elemento del historial
+                const removedLine = synchronizedLines.pop();
+                currentLineIndex--;
+
+                // Retroceder el reproductor de música al punto donde se grabó esa línea para repetir bien
+                audioElement.currentTime = Math.max(0, removedLine.time - 1);
+
+                updateConsoleView();
+                buildFinalJSON();
+            }
+        }
+
+        btnUndoLine.addEventListener('click', undoLastLine);
+
+        // Atajo de teclado: Si presionas la tecla de Borrar/Backspace en la página, hace el Undo automáticamente
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Backspace' && isSyncRunning) {
+                // Solo si no se está editando texto de forma manual en el cuadro
+                if (document.activeElement !== lyricsInput) {
+                    e.preventDefault();
+                    undoLastLine();
+                }
+            }
+        });
+
+        // 6. RESETEAR TODO COMPLETO
+        btnResetAll.addEventListener('click', () => {
+            if(confirm("¿Seguro que quieres borrar todas las marcas de tiempo y empezar desde el segundo cero?")) {
+                currentLineIndex = 0;
+                synchronizedLines = [];
+                if(linesArray.length > 0) isSyncRunning = true;
+                audioElement.currentTime = 0;
+                updateConsoleView();
+                jsonOutput.textContent = "// Sincronización reiniciada. Lista desde el segundo 0.";
+            }
+        });
+
+        // 7. Imprimir salida limpia en pantalla
+        function buildFinalJSON() {
+            jsonOutput.textContent = JSON.stringify(synchronizedLines, null, 4);
         }
 
         lucide.createIcons();
